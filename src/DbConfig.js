@@ -12,4 +12,4 @@ var config = {
 		trustServerCertificate: true,
 	},
 };
-module.exports = { config, configLogin };
+module.exports = { config };

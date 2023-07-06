@@ -25,9 +25,9 @@ class HomeController {
 		// 		console.log(`Error: ${error}`);
 		// 	}
 		// };
-		// func().then((ress) => {
+		// func().then((resReturn) => {
 
-		// 	res.json(ress.recordset);
+		// 	res.json(resReturn.recordset);
 		// });
     res.json({})
 	}
