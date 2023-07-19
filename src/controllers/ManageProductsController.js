@@ -51,7 +51,7 @@ class HomeController {
 			for (let index = 0; index < req.body.data.detail.length; index++) {
 				const element = req.body.data.detail[index];
 				request = new sql.Request();
-				request.input("id", sql.VarChar(10), element.id);
+				request.input("id" , sql.VarChar(10), element.id);
 				request.input("name", sql.VarChar(20), element.name);
 				request.input("stock", sql.VarChar(20), element.stock);
 				request.input("image", sql.VarChar(20), element.image);
