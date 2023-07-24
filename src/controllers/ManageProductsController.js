@@ -64,6 +64,23 @@ class ManageProductsController {
 		});
 	}
 	// [GET]
+	GetAll(req, res) {
+		const func = async () => {
+			try {
+				let pool = await sql.connect(config);
+				let result = pool
+					.request()
+					.query(`SELECT * FROM dbo.SANPHAM DT`);
+				return result;
+			} catch (error) {
+				console.log(`Error: ${error}`);
+			}
+		};
+		func().then((resReturn) => {
+			res.json(resReturn.recordset);
+		});
+	}
+	// [GET]
 	GetList(req, res) {
 		const func = async () => {
 			try {

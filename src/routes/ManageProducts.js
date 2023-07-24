@@ -3,8 +3,10 @@ const router = express.Router();
 
 const ManageProductsController = require('../controllers/ManageProductsController');
 
-//For searching
+
 router.get('/', ManageProductsController.GetProducts);
+//For searching
+router.get('/all', ManageProductsController.GetAll);
 router.get('/:slug', ManageProductsController.GetList);
 router.get('/searchcategory/:slug', ManageProductsController.GetProductsByCategory);
 router.get('/category/:slug/:slug1', ManageProductsController.GetListByCategory);
