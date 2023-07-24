@@ -23,8 +23,8 @@ class HomeController {
 				console.log(`Error: ${error}`);
 			}
 		};
-		func().then((resReturn) => {
-			res.json(resReturn.recordset);
+		func().then((response) => {
+			res.json(response?.recordset);
 		});
 	}
 }
