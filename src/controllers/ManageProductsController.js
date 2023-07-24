@@ -1,7 +1,7 @@
 const config = require("../DbConfig");
 const sql = require("mssql");
 class HomeController {
-	async index(req, res) {}
+	async index(req, res) { }
 	// [GET]
 	GetProducts(req, res) {
 		const func = async () => {
@@ -10,12 +10,81 @@ class HomeController {
 				await sql.connect(config).then((conn) =>
 					conn
 						.request()
-						.query(`SELECT * FROM dbo.DOITAC DT`)
+						.query(`SELECT * FROM dbo.SANPHAM DT`)
 						.then((v) => {
 							result = v;
 						})
 						.then(() => conn.close())
 				);
+				return result;
+			} catch (error) {
+				console.log(`Error: ${error}`);
+			}
+		};
+		func().then((resReturn) => {
+			res.json(resReturn.recordset);
+		});
+	}
+	// [GET]
+	GetList(req, res) {
+		const func = async () => {
+			try {
+				let pool = await sql.connect(config);
+				let result = pool
+					.request()
+					.query(`SELECT * FROM dbo.SANPHAM DT where DT.TEN_SP like '%${req.params.slug}%'`);
+				return result;
+			} catch (error) {
+				console.log(`Error: ${error}`);
+			}
+		};
+		func().then((resReturn) => {
+			res.json(resReturn.recordset);
+		});
+	}
+	// [GET]
+	GetProductsByCategory(req, res) {
+		var cat;
+		if (req.params.slug === "phone")
+			cat = "Điện thoại";
+		else if (req.params.slug === "ipad")
+			cat = "Ipad";
+		else if (req.params.slug === "charge")
+			cat = "Cục sạc";
+		else if (req.params.slug === "headphone")
+			cat = "Tai nghe";
+		const func = async () => {
+			try {
+				let pool = await sql.connect(config);
+				let result = pool
+					.request()
+					.query(`SELECT * FROM dbo.SANPHAM DT join dbo.LOAISANPHAM L on DT.MA_LOAI_SP = L.MA_LOAI_SP where L.TEN_LOAI_SP like N'${cat}'`);
+				return result;
+			} catch (error) {
+				console.log(`Error: ${error}`);
+			}
+		};
+		func().then((resReturn) => {
+			res.json(resReturn.recordset);
+		});
+	}
+	// [GET]
+	GetListByCategory(req, res) {
+		var cat;
+		if (req.params.slug === "phone")
+			cat = "Điện thoại";
+		else if (req.params.slug === "ipad")
+			cat = "Ipad";
+		else if (req.params.slug === "charge")
+			cat = "Cục sạc";
+		else if (req.params.slug === "headphone")
+			cat = "Tai nghe";
+		const func = async () => {
+			try {
+				let pool = await sql.connect(config);
+				let result = pool
+					.request()
+					.query(`SELECT * FROM dbo.SANPHAM DT join dbo.LOAISANPHAM L on DT.MA_LOAI_SP = L.MA_LOAI_SP where L.TEN_LOAI_SP like N'${cat}' and DT.TEN_SP like '%${req.params.slug1}%'`);
 				return result;
 			} catch (error) {
 				console.log(`Error: ${error}`);
@@ -51,7 +120,7 @@ class HomeController {
 			for (let index = 0; index < req.body.data.detail.length; index++) {
 				const element = req.body.data.detail[index];
 				request = new sql.Request();
-				request.input("id" , sql.VarChar(10), element.id);
+				request.input("id", sql.VarChar(10), element.id);
 				request.input("name", sql.VarChar(20), element.name);
 				request.input("stock", sql.VarChar(20), element.stock);
 				request.input("image", sql.VarChar(20), element.image);
