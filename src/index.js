@@ -2,7 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const route = require("./routes");
-const sql = require('mssql');
 var app = express();
 
 app.use(morgan("dev"));
