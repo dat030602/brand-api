@@ -1,7 +1,7 @@
 const config = require("../DbConfig");
 const sql = require("mssql");
 class ManageProductsController {
-	async index(req, res) { }
+	async index(req, res) {}
 	// [GET]
 	GetProducts(req, res) {
 		const func = async () => {
@@ -47,10 +47,10 @@ class ManageProductsController {
 				await sql.connect(config).then((conn) =>
 					conn
 						.request()
-						.query(`select * from LOAISANPHAM`)
-						.query(`SELECT * FROM dbo.SANPHAM DT`)
+						.query(`SELECT * FROM dbo.LOAISANPHAM`)
 						.then((v) => {
 							result = v;
+							console.log("run");
 						})
 						.then(() => conn.close())
 				);
@@ -68,9 +68,7 @@ class ManageProductsController {
 		const func = async () => {
 			try {
 				let pool = await sql.connect(config);
-				let result = pool
-					.request()
-					.query(`SELECT * FROM dbo.SANPHAM DT`);
+				let result = pool.request().query(`SELECT * FROM dbo.SANPHAM DT`);
 				return result;
 			} catch (error) {
 				console.log(`Error: ${error}`);
@@ -100,20 +98,18 @@ class ManageProductsController {
 	// [GET]
 	GetProductsByCategory(req, res) {
 		var cat;
-		if (req.params.slug === "phone")
-			cat = "Điện thoại";
-		else if (req.params.slug === "ipad")
-			cat = "Ipad";
-		else if (req.params.slug === "charge")
-			cat = "Cục sạc";
-		else if (req.params.slug === "headphone")
-			cat = "Tai nghe";
+		if (req.params.slug === "phone") cat = "Điện thoại";
+		else if (req.params.slug === "ipad") cat = "Ipad";
+		else if (req.params.slug === "charge") cat = "Cục sạc";
+		else if (req.params.slug === "headphone") cat = "Tai nghe";
 		const func = async () => {
 			try {
 				let pool = await sql.connect(config);
 				let result = pool
 					.request()
-					.query(`SELECT * FROM dbo.SANPHAM DT join dbo.LOAISANPHAM L on DT.MA_LOAI_SP = L.MA_LOAI_SP where L.TEN_LOAI_SP like N'${cat}'`);
+					.query(
+						`SELECT * FROM dbo.SANPHAM DT join dbo.LOAISANPHAM L on DT.MA_LOAI_SP = L.MA_LOAI_SP where L.TEN_LOAI_SP like N'${cat}'`
+					);
 				return result;
 			} catch (error) {
 				console.log(`Error: ${error}`);
@@ -126,20 +122,18 @@ class ManageProductsController {
 	// [GET]
 	GetListByCategory(req, res) {
 		var cat;
-		if (req.params.slug === "phone")
-			cat = "Điện thoại";
-		else if (req.params.slug === "ipad")
-			cat = "Ipad";
-		else if (req.params.slug === "charge")
-			cat = "Cục sạc";
-		else if (req.params.slug === "headphone")
-			cat = "Tai nghe";
+		if (req.params.slug === "phone") cat = "Điện thoại";
+		else if (req.params.slug === "ipad") cat = "Ipad";
+		else if (req.params.slug === "charge") cat = "Cục sạc";
+		else if (req.params.slug === "headphone") cat = "Tai nghe";
 		const func = async () => {
 			try {
 				let pool = await sql.connect(config);
 				let result = pool
 					.request()
-					.query(`SELECT * FROM dbo.SANPHAM DT join dbo.LOAISANPHAM L on DT.MA_LOAI_SP = L.MA_LOAI_SP where L.TEN_LOAI_SP like N'${cat}' and DT.TEN_SP like '%${req.params.slug1}%'`);
+					.query(
+						`SELECT * FROM dbo.SANPHAM DT join dbo.LOAISANPHAM L on DT.MA_LOAI_SP = L.MA_LOAI_SP where L.TEN_LOAI_SP like N'${cat}' and DT.TEN_SP like '%${req.params.slug1}%'`
+					);
 				return result;
 			} catch (error) {
 				console.log(`Error: ${error}`);
