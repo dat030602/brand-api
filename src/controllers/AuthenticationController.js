@@ -36,15 +36,14 @@ class AuthenticationController {
 				let result;
 				const secret = "EgZjaHJvbWUyBggAEEUYOTIMCAEQABgUGIcCGIAEMgcIAhAAGIAEMgwIAxAA";
 				const jwt = sign(req.body.data, secret);
-
 				await sql.connect(config).then((conn) =>
 					conn
 						.request()
-						.input("tentk", sql.VarChar(10), req.body.data.fullname.toUpperCase())
-						.input("hoten", sql.NVarChar(100), req.body.data.email)
-						.input("ngaysinh", sql.Date, req.body.data.phone)
-						.input("email", sql.VarChar(30), req.body.data.phone)
-						.input("sdt", sql.Char(10), req.body.data.password)
+						.input("tentk", sql.VarChar(10), req.body.data.user.toUpperCase())
+						.input("hoten", sql.NVarChar(100), req.body.data.name)
+						.input("ngaysinh", sql.Date, req.body.data.date)
+						.input("email", sql.VarChar(30), req.body.data.email)
+						.input("sdt", sql.Char(10), req.body.data.phone)
 						.input("password", sql.VarChar(1000), req.body.data.password)
 						.input("token", sql.VarChar(1000), jwt)
 						.execute("dbo.SP_REGISTER")
