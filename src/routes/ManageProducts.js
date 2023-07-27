@@ -5,12 +5,6 @@ const ManageProductsController = require('../controllers/ManageProductsControlle
 
 
 router.get('/', ManageProductsController.GetProducts);
-//For searching
-router.get('/all', ManageProductsController.GetAll);
-router.get('/:slug', ManageProductsController.GetList);
-router.get('/searchcategory/:slug', ManageProductsController.GetProductsByCategory);
-router.get('/category/:slug/:slug1', ManageProductsController.GetListByCategory);
-
 router.get('/type-product', ManageProductsController.GetTypeProduct);
 router.post('/', ManageProductsController.AddProduct);
 router.put('/edit/ten-san-pham', ManageProductsController.EditProduct_TEN_SP);
