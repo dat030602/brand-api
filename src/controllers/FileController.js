@@ -1,6 +1,8 @@
 require("../FirebaseConfig");
 const firebase = require("firebase/storage");
 const uuid = require("uuid");
+const config = require("../DbConfig");
+const sql = require("mssql");
 // import { ref, uploadBytes, getDownloadURL, listAll, list } from "firebase/storage";
 // import { storage } from "./firebase";
 // import { v4 } from "uuid";
@@ -30,31 +32,39 @@ class FileController {
 		try {
 			const storageRef = firebase.ref(
 				storage,
-				`Image/${req.file.originalname.slice(0, req.file.originalname.length - 4) + uuid.v4()}`
+				`Image/${
+					req.files["imageUpload"][0].originalname.slice(
+						0,
+						req.files["imageUpload"][0].originalname.length - 4
+					) + uuid.v4()
+				}`
 			);
 			const metadata = {
-				contentType: req.file.mimetype,
-				name: req.file.originalname,
+				contentType: req.files["imageUpload"][0].mimetype,
+				name: req.files["imageUpload"][0].originalname,
 			};
-			const snapshot = await firebase.uploadBytesResumable(storageRef, req.file.buffer, metadata);
+			const snapshot = await firebase.uploadBytesResumable(
+				storageRef,
+				req.files["imageUpload"][0].buffer,
+				metadata
+			);
 			const downloadURL = await firebase.getDownloadURL(snapshot.ref);
-
 			await sql.connect(config, function (err) {
 				if (err) console.log(err);
 
 				// create Request object
 				var request = new sql.Request();
-				request.input("masp", sql.VarChar(10), req.body.data.masp);
-				request.input("stt", sql.NVarChar(100), req.body.data.stt);
-				request.input("url", sql.NVarChar(100), downloadURL);
+				request.input("masp", sql.VarChar(10), req.body.masp);
+				request.input("stt", sql.Int, req.body.stt);
+				request.input("hinhanh", sql.VarChar(5000), downloadURL);
 				// query to the database and get the records
-				request.execute("dbo.SP_UPLOAD_IMAGE", function (err, response) {
+				request.execute("dbo.SP_EDIT_DETAIL_PRODUCT_HINHANHSP", function (err, response) {
 					if (err) console.log(err);
 					if (response.returnValue === 1)
 						return res.send({
 							message: "File uploaded to firebase storage",
-							name: req.file.originalname,
-							type: req.file.mimetype,
+							name: req.files["imageUpload"][0].originalname,
+							type: req.files["imageUpload"][0].mimetype,
 							downloadURL: downloadURL,
 						});
 					else return res.status(400).send(error.message);

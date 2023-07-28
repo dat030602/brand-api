@@ -124,11 +124,13 @@ class ManageProductsController {
 
 			// create Request object
 			var request = new sql.Request();
+			console.log(req.body.data)
 			request.input("masp", sql.VarChar(10), req.body.data.masp);
 			request.input("tenloaisp", sql.NVarChar(1000), req.body.data.tenloaisp);
 			// query to the database and get the records
 			request.execute("dbo.SP_EDIT_PRODUCT_TEN_LOAI_SP", function (err, response) {
 				if (err) console.log(err);
+				console.log(response.returnValue)
 				res.json(response);
 			});
 		});
