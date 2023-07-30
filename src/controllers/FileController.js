@@ -78,37 +78,60 @@ class FileController {
 	// [PUT] /edit-image
 	async EditImage(req, res) {
 		try {
-			const fileName = req.file.originalname.slice(0, req.file.originalname.length - 4) + uuid.v4();
-			var storageRef = firebase.ref(storage, `Image/${fileName}`);
+			const url = req.body.fileNameDelete;
+			var result = url.slice(url.indexOf("%2F") + 3, url.indexOf("alt=media") - 1);
+
+			var storageRef = firebase.ref(storage, `Image/${result}`);
+			// const storageRef = firebase.ref(storage, `Image/${req.body.url}`);
+			await firebase
+				.deleteObject(storageRef)
+				.then(async () => {
+					await sql.connect(config, function (err) {
+						if (err) {
+							console.log(err);
+							return res.status(400).send("error");
+						}
+					});
+				})
+				.catch((error) => {
+					return res.status(400).send("error");
+				});
+
+			storageRef = firebase.ref(
+				storage,
+				`Image/${
+					req.files["imageUpload"][0].originalname.slice(
+						0,
+						req.files["imageUpload"][0].originalname.length - 4
+					) + uuid.v4()
+				}`
+			);
 			const metadata = {
-				contentType: req.file.mimetype,
-				name: req.file.originalname,
+				contentType: req.files["imageUpload"][0].mimetype,
+				name: req.files["imageUpload"][0].originalname,
 			};
-
-			const snapshot = await firebase.uploadBytesResumable(storageRef, req.file.buffer, metadata);
+			const snapshot = await firebase.uploadBytesResumable(
+				storageRef,
+				req.files["imageUpload"][0].buffer,
+				metadata
+			);
 			const downloadURL = await firebase.getDownloadURL(snapshot.ref);
-
-			storageRef = firebase.ref(storage, `Image/${req.body.fileNameDelete}`);
-			await firebase.deleteObject(storageRef).catch((error) => {
-				return res.status(400).send(error.message);
-			});
-
 			await sql.connect(config, function (err) {
 				if (err) console.log(err);
 
 				// create Request object
 				var request = new sql.Request();
-				request.input("masp", sql.VarChar(10), req.body.data.masp);
-				request.input("stt", sql.NVarChar(100), req.body.data.stt);
-				request.input("url", sql.NVarChar(100), downloadURL);
+				request.input("masp", sql.VarChar(10), req.body.masp);
+				request.input("stt", sql.Int, req.body.stt);
+				request.input("hinhanh", sql.VarChar(5000), downloadURL);
 				// query to the database and get the records
-				request.execute("dbo.SP_EDIT_IMAGE", function (err, response) {
+				request.execute("dbo.SP_EDIT_DETAIL_PRODUCT_HINHANHSP", function (err, response) {
 					if (err) console.log(err);
 					if (response.returnValue === 1)
 						return res.send({
-							message: "file edited in firebase storage",
-							name: req.file.originalname,
-							type: req.file.mimetype,
+							message: "File uploaded to firebase storage",
+							name: req.files["imageUpload"][0].originalname,
+							type: req.files["imageUpload"][0].mimetype,
 							downloadURL: downloadURL,
 						});
 					else return res.status(400).send(error.message);

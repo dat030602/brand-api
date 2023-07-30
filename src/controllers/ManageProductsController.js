@@ -1,5 +1,11 @@
+require("../FirebaseConfig");
+const firebase = require("firebase/storage");
+const uuid = require("uuid");
 const config = require("../DbConfig");
 const sql = require("mssql");
+
+const storage = firebase.getStorage();
+
 class ManageProductsController {
 	async index(req, res) {}
 	// [GET]
@@ -22,7 +28,8 @@ class ManageProductsController {
 			}
 		};
 		func().then((response) => {
-			if (response.recordsets.length === 0) res.json({});
+			if (response.recordsets === undefined) res.json({});
+			else if (response.recordsets.length === 0) res.json({});
 			else
 				res.json(
 					response.recordsets[0].map((el) => {
@@ -50,7 +57,6 @@ class ManageProductsController {
 						.query(`SELECT * FROM dbo.LOAISANPHAM`)
 						.then((v) => {
 							result = v;
-							console.log("run");
 						})
 						.then(() => conn.close())
 				);
@@ -63,41 +69,125 @@ class ManageProductsController {
 			res.json(response?.recordset);
 		});
 	}
+
 	// [POST]
 	AddProduct(req, res) {
+		const body = JSON.parse(req.body.data);
+		async function UploadImage(file) {
+			try {
+				const storageRef = firebase.ref(
+					storage,
+					`Image/${file.originalname.slice(0, file.originalname.length - 4) + uuid.v4()}`
+				);
+				const metadata = {
+					contentType: file.mimetype,
+					name: file.originalname,
+				};
+				const snapshot = await firebase.uploadBytesResumable(storageRef, file.buffer, metadata);
+				const downloadURL = await firebase.getDownloadURL(snapshot.ref);
+				return downloadURL;
+			} catch (error) {
+				return "";
+			}
+		}
+
+		async function AddDetail(element, index, id) {
+			try {
+				var requestDetail = new sql.Request();
+				const downloadURL = await UploadImage(req.files["imageUpload"][index]);
+				requestDetail.input(`masp`, sql.VarChar(10), id);
+				requestDetail.input(`stt`, sql.Int, index + 1);
+				requestDetail.input(`tenctsp`, sql.NVarChar(1000), element.name);
+				requestDetail.input(`giaban`, sql.Float, element.price);
+				requestDetail.input(`gianhap`, sql.Float, element.importPrice);
+				requestDetail.input(`slkho`, sql.Int, element.stock);
+				requestDetail.input(`hinhanh`, sql.VarChar(5000), downloadURL);
+				// query to the database and get the records
+				requestDetail.execute("dbo.SP_ADD_DETAIL_PRODUCT", function (err, response) {
+					if (err) {
+						console.log(err);
+						res.json({ returnValue: 0 });
+					}
+				});
+			} catch (error) {
+				console.log(error);
+			}
+		}
 		sql.connect(config, function (err) {
 			if (err) console.log(err);
 
+			let id = "";
+			const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+			const charactersLength = characters.length;
+			let counter = 0;
+			while (counter < 10) {
+				id += characters.charAt(Math.floor(Math.random() * charactersLength));
+				counter += 1;
+			}
 			// create Request object
 			var request = new sql.Request();
-			request.input("masp", sql.VarChar(10), req.body.data.id);
-			request.input("tensp", sql.NVarChar(100), req.body.data.id);
-			request.input("mota", sql.NCharVarChar(1000), req.body.data.name);
-			request.input("brand", sql.NVarChar(30), req.body.data.name);
+			request.input("masp", sql.VarChar(10), id);
+			request.input("tensp", sql.NVarChar(100), body.product.name);
+			request.input("mota", sql.NVarChar(1000), body.product.description);
+			request.input("brand", sql.NVarChar(30), body.product.brand);
+			request.input("tenloaisp", sql.NVarChar(1000), body.product.category);
 			// query to the database and get the records
 			request.execute("dbo.SP_ADD_PRODUCT", function (err, response) {
 				if (err) console.log(err);
-
-				console.log(response);
-				// send records as a response
-				// res.send(recordset);
+				else {
+					for (let index = 0; index < body.detail.length; index++) {
+						const element = body.detail[index];
+						AddDetail(element, index, id);
+					}
+					res.json({ returnValue: 1 });
+				}
 			});
-			for (let index = 0; index < req.body.data.detail.length; index++) {
-				const element = req.body.data.detail[index];
-				request = new sql.Request();
-				request.input("masp", sql.VarChar(10), element.id);
-				request.input("tenctsp", sql.NVarChar(1000), element.name);
-				request.input("giaban", sql.Float, element.stock);
-				request.input("gianhap", sql.Float, element.image);
-				request.input("slkho", sql.Int, element.image);
-				request.input("hinhanh", sql.VarChar(5000), element.image);
-				// query to the database and get the records
-				request.execute("dbo.SP_ADD_DETAIL_PRODUCT", function (err, response) {
-					if (err) console.log(err);
+		});
+	}
+	// [POST]
+	AddDetailProduct(req, res) {
+		const body = JSON.parse(req.body.data);
 
-					// send records as a response
-					res.json(response);
+		async function UploadImage(file) {
+			try {
+				const storageRef = firebase.ref(
+					storage,
+					`Image/${file.originalname.slice(0, file.originalname.length - 4) + uuid.v4()}`
+				);
+				const metadata = {
+					contentType: file.mimetype,
+					name: file.originalname,
+				};
+				const snapshot = await firebase.uploadBytesResumable(storageRef, file.buffer, metadata);
+				const downloadURL = await firebase.getDownloadURL(snapshot.ref);
+				return downloadURL;
+			} catch (error) {
+				return "";
+			}
+		}
+		sql.connect(config, async function (err) {
+			if (err) console.log(err);
+			try {
+				var requestDetail = new sql.Request();
+				const downloadURL = await UploadImage(req.files["imageUpload"][0]);
+				requestDetail.input(`masp`, sql.VarChar(10), body.masp);
+				requestDetail.input(`stt`, sql.Int, body.stt);
+				requestDetail.input(`tenctsp`, sql.NVarChar(1000), body.name);
+				requestDetail.input(`giaban`, sql.Float, body.price);
+				requestDetail.input(`gianhap`, sql.Float, body.importPrice);
+				requestDetail.input(`slkho`, sql.Int, body.stock);
+				requestDetail.input(`hinhanh`, sql.VarChar(5000), downloadURL);
+				// query to the database and get the records
+				requestDetail.execute("dbo.SP_ADD_DETAIL_PRODUCT", function (err, response) {
+					if (err) {
+						console.log(err);
+						res.json({ returnValue: 0 });
+					} else {
+						res.json({ returnValue: 1 });
+					}
 				});
+			} catch (error) {
+				console.log(error);
 			}
 		});
 	}
@@ -124,13 +214,13 @@ class ManageProductsController {
 
 			// create Request object
 			var request = new sql.Request();
-			console.log(req.body.data)
+			console.log(req.body.data);
 			request.input("masp", sql.VarChar(10), req.body.data.masp);
 			request.input("tenloaisp", sql.NVarChar(1000), req.body.data.tenloaisp);
 			// query to the database and get the records
 			request.execute("dbo.SP_EDIT_PRODUCT_TEN_LOAI_SP", function (err, response) {
 				if (err) console.log(err);
-				console.log(response.returnValue)
+				console.log(response.returnValue);
 				res.json(response);
 			});
 		});
