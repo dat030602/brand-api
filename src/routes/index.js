@@ -12,6 +12,8 @@ function route(app) {
   app.use("/authentication", authenticationRouter);
   app.use("/manage-products", manageProductsRouter);
   app.use("/search", searchRouter);
+  app.use("/manage-vouchers", manageVouchersRouter);
+  app.use("/my-cart", cartRouter);
 }
 
 module.exports = route;
