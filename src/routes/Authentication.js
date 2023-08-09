@@ -5,5 +5,7 @@ const AuthenticationController = require('../controllers/AuthenticationControlle
 
 router.post('/login', AuthenticationController.Login);
 router.post('/register', AuthenticationController.Register);
+router.get('/', AuthenticationController.Profile);
+router.put('/edit-profile', AuthenticationController.EditProfile);
 
 module.exports = router;
