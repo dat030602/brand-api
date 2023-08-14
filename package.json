@@ -12,8 +12,7 @@
 		"dotenv": "^16.0.3",
 		"mssql": "^9.0.1",
 		"multer": "^1.4.5-lts.1",
-		"nodemon": "^2.0.20",
-		"react-cookie": "^4.1.1"
+		"nodemon": "^2.0.20"
 	},
 	"author": "",
 	"license": "ISC",
