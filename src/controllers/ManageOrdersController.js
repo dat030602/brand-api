@@ -43,31 +43,6 @@ class ManageOrdersController {
     });
   }
 
-  GetOrderCount(req, res) {
-    const func = async () => {
-      try {
-        let result;
-        await sql.connect(config).then((conn) =>
-          conn
-            .request()
-            .query(
-              `SELECT count (distinct ddh.MA_DONHANG) as SL_DONHANG FROM DONDATHANG ddh`
-            )
-            .then((v) => {
-              result = v;
-            })
-            .then(() => conn.close())
-        );
-        return result;
-      } catch (error) {
-        console.log(`Error: ${error}`);
-      }
-    };
-    func().then((response) => {
-      res.json(response?.recordset);
-    });
-  }
-
   // [GET]
   GetSelectedOrderInfo(req, res) {
     const func = async () => {
