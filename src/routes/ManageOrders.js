@@ -4,7 +4,6 @@ const router = express.Router();
 const ManageOrdersController = require("../controllers/ManageOrdersController");
 
 router.get("/", ManageOrdersController.GetAllOrders);
-router.get("/:slug", ManageOrdersController.GetSelectedOrderInfo);
 router.get("/order-detail/:slug", ManageOrdersController.GetOrderDetail);
 router.put(
   "/order-detail/:slug/:slug1",

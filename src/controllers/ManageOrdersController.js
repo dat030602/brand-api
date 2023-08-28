@@ -16,18 +16,7 @@ class ManageOrdersController {
         await sql.connect(config).then((conn) =>
           conn
             .request()
-            .query(
-              `SELECT ddh.*, dc.DIACHI
-            FROM DONDATHANG ddh
-            JOIN (
-                SELECT stt, MA_KHACH, CONCAT(SONHA_DUONG, ', ', p.TEN_PHUONG, ', ', tp.TEN_THANHPHO, ', ', tinh.TEN_TINH) AS diachi
-                FROM DIACHIGIAOHANG dc
-                JOIN PHUONG p ON p.MA_PHUONG = dc.PHUONG
-                JOIN THANHPHO tp ON tp.MA_THANHPHO = dc.THANHPHO
-                JOIN TINH tinh ON tinh.MA_TINH = dc.TINH
-            ) AS dc ON ddh.STT_DIACHI = dc.stt AND ddh.MA_KHACH = dc.MA_KHACH;
-            `
-            )
+            .execute("dbo.SP_GET_ALL_ORDER")
             .then((v) => {
               result = v;
             })
@@ -40,31 +29,6 @@ class ManageOrdersController {
     };
     func().then((response) => {
       res.json(response?.recordset);
-    });
-  }
-
-  // [GET]
-  GetSelectedOrderInfo(req, res) {
-    const func = async () => {
-      try {
-        let result;
-        await sql.connect(config).then((conn) =>
-          conn
-            .request()
-            .input("MA_DONHANG", sql.VarChar(10), req.params.slug)
-            .execute("dbo.SP_GET_ONE_ORDER_INFO")
-            .then((v) => {
-              result = v;
-            })
-            .then(() => conn.close())
-        );
-        return result;
-      } catch (error) {
-        console.log(`Error: ${error}`);
-      }
-    };
-    func().then((resReturn) => {
-      res.json(resReturn.recordset);
     });
   }
 
