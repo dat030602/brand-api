@@ -14,7 +14,7 @@ class HomeController {
             recommend: size > 5 ? response.recordsets[0].slice(0, size - (size % 5)) : response.recordsets[0],
             type_product: response.recordsets[1],
             deal: {
-              time: response.recordsets[2][0].end_date,
+              time: response.recordsets[2][0]?.end_date,
               product: response.recordsets[2].map((el) => {
                 return {
                   ma_sp: el.ma_sp,

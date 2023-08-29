@@ -9,6 +9,7 @@ const searchRouter = require("./Search");
 const cartRouter = require("./Cart");
 const productRouter = require("./Product");
 const userRouter = require("./User");
+const dashboardRouter = require("./Dashboard");
 const manageOrdersRouter = require("./ManageOrders");
 
 function route(app) {
@@ -23,6 +24,7 @@ function route(app) {
   app.use("/search", searchRouter);
   app.use("/my-cart", cartRouter);
   app.use("/user", userRouter);
+  app.use("/dashboard", dashboardRouter);
   app.use("/manage-orders", manageOrdersRouter);
 }
 
