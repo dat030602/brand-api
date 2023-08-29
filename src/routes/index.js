@@ -9,8 +9,9 @@ const searchRouter = require("./Search");
 const cartRouter = require("./Cart");
 const productRouter = require("./Product");
 const userRouter = require("./User");
-const dashboardRouter = require("./Dashboard");
 const manageOrdersRouter = require("./ManageOrders");
+const loyaltyRouter = require('./Loyalty');
+const dashboardRouter = require("./Dashboard");
 
 function route(app) {
   app.use("/home", homeRouter);
@@ -26,6 +27,7 @@ function route(app) {
   app.use("/user", userRouter);
   app.use("/dashboard", dashboardRouter);
   app.use("/manage-orders", manageOrdersRouter);
+  app.use('/loyalty', loyaltyRouter);
 }
 
 module.exports = route;
