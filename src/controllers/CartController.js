@@ -1,31 +1,7 @@
-const config = require("../DbConfig");
-const sql = require("mssql");
+const config = require('../DbConfig');
+const sql = require('mssql');
 class CartController {
   async index(req, res) {}
-  //GET total
-  GetCartTotal(req, res) {
-    const func = async () => {
-      try {
-        let result;
-        await sql.connect(config).then((conn) =>
-          conn
-            .request()
-            .input("MAKHACH", sql.VarChar(10), req.query.MAKHACH)
-            .execute("dbo.KH_XEM_TONGTIEN_SOLUONG_GIO_HANG")
-            .then((v) => {
-              result = v;
-            })
-            .then(() => conn.close())
-        );
-        return result;
-      } catch (error) {
-        console.log(`Error: ${error}`);
-      }
-    };
-    func().then((response) => {
-      res.json(response?.recordset);
-    });
-  }
   // [GET] /
   GetAllCart(req, res) {
     const func = async () => {
@@ -34,12 +10,12 @@ class CartController {
         await sql.connect(config).then((conn) =>
           conn
             .request()
-            .input("MAKHACH", sql.VarChar(10), req.query.MAKHACH)
-            .execute("dbo.KH_XEM_CT_GIOHANG")
+            .input('MAKHACH', sql.VarChar(10), req.query.MAKHACH)
+            .execute('dbo.KH_XEM_CT_GIOHANG')
             .then((v) => {
               result = v;
             })
-            .then(() => conn.close())
+            .then(() => conn.close()),
         );
         return result;
       } catch (error) {
@@ -59,12 +35,12 @@ class CartController {
 
       // create Request object
       var request = new sql.Request();
-      request.input("MAKHACH", sql.VarChar(10), req.body.data.MAKHACH);
-      request.input("MASP", sql.VarChar(10), req.body.data.MA_SP);
-      request.input("STT", sql.Int, req.body.data.STT);
-      request.input("SOLUONG", sql.Int, req.body.data.SO_LUONG);
+      request.input('MAKHACH', sql.VarChar(10), req.body.data.MAKHACH);
+      request.input('MASP', sql.VarChar(10), req.body.data.MA_SP);
+      request.input('STT', sql.Int, req.body.data.STT);
+      request.input('SOLUONG', sql.Int, req.body.data.SO_LUONG);
       // query to the database and get the records
-      request.execute("dbo.KH_UPDATE_CT_GIOHANG", function (err, response) {
+      request.execute('dbo.KH_UPDATE_CT_GIOHANG', function (err, response) {
         if (err) console.log(err);
         res?.json(response);
       });
@@ -78,14 +54,14 @@ class CartController {
         await sql.connect(config).then((conn) =>
           conn
             .request()
-            .input("MAKHACH", sql.VarChar(10), req.body.MAKHACH)
-            .input("MASP", sql.VarChar(10), req.body.MA_SP)
-            .input("STT", sql.Int, req.body.STT)
-            .execute("dbo.SP_KH_REMOVE_PRODUCT_FROM_CART")
+            .input('MAKHACH', sql.VarChar(10), req.body.MAKHACH)
+            .input('MASP', sql.VarChar(10), req.body.MA_SP)
+            .input('STT', sql.Int, req.body.STT)
+            .execute('dbo.SP_KH_REMOVE_PRODUCT_FROM_CART')
             .then((v) => {
               result = v;
             })
-            .then(() => conn.close())
+            .then(() => conn.close()),
         );
         return result;
       } catch (error) {

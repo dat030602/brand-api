@@ -1,11 +1,10 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
-const CartController = require("../controllers/CartController");
+const CartController = require('../controllers/CartController');
 
-router.get("/", CartController.GetAllCart);
-router.get("/total", CartController.GetCartTotal);
-router.delete("/", CartController.RemoveFromCart);
-router.put("/", CartController.UpdateQuantity);
+router.get('/', CartController.GetAllCart);
+router.delete('/', CartController.RemoveFromCart);
+router.put('/', CartController.UpdateQuantity);
 
 module.exports = router;
