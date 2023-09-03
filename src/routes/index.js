@@ -12,6 +12,7 @@ const userRouter = require('./User');
 const manageOrdersRouter = require('./ManageOrders');
 const loyaltyRouter = require('./Loyalty');
 const refundOrderRouter = require('./RefundOrder');
+const dashboardRouter = require('./Dashboard');
 
 function route(app) {
   app.use('/home', homeRouter);
@@ -25,6 +26,7 @@ function route(app) {
   app.use('/search', searchRouter);
   app.use('/my-cart', cartRouter);
   app.use('/user', userRouter);
+  app.use('/dashboard', dashboardRouter);
   app.use('/manage-orders', manageOrdersRouter);
   app.use('/loyalty', loyaltyRouter);
 }
