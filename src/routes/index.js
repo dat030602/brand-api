@@ -29,6 +29,7 @@ function route(app) {
   app.use('/dashboard', dashboardRouter);
   app.use('/manage-orders', manageOrdersRouter);
   app.use('/loyalty', loyaltyRouter);
+  app.use('/refund', refundOrderRouter);
 }
 
 module.exports = route;

@@ -27,7 +27,6 @@ class CartController {
     });
   }
 
-  // EDIT SO_LUONG
   UpdateQuantity(req, res) {
     sql.connect(config, function (err) {
       if (err) console.log(err);
