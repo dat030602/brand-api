@@ -130,7 +130,7 @@ class SearchController {
 			}
 		};
 		func().then((resReturn) => {
-			res.json(resReturn.recordset);
+			res.json(resReturn?.recordset);
 		});
 	}
 	// [GET]
