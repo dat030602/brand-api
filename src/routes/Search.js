@@ -5,8 +5,9 @@ const SearchController = require('../controllers/SearchController');
 
 //For searching
 router.get('/all', SearchController.GetAll);
-router.get('/:slug', SearchController.GetList);
-router.get('/search/category/:slug', SearchController.GetProductsByCategory);
-router.get('/category/:slug/:slug1', SearchController.GetListByCategory);
-
+router.get('/category', SearchController.GetProductsByCategory);
+router.get('/find', SearchController.GetListByCategory);
+router.get('/findall', SearchController.GetList);
+router.get('/brand/all', SearchController.GetAllBrand);
+router.get('/filter', SearchController.GetAllByFilter);
 module.exports = router;

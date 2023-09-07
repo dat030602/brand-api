@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const ManageOrdersController = require("../controllers/ManageOrdersController");
-
+router.get("/history", ManageOrdersController.GetOrderHistory);
 router.get("/", ManageOrdersController.GetAllOrders);
 router.get("/order-detail/:slug", ManageOrdersController.GetOrderDetail);
 router.put(

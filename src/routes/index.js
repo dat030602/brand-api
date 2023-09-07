@@ -14,9 +14,11 @@ const manageOrdersRouter = require('./ManageOrders');
 const loyaltyRouter = require('./Loyalty');
 const refundOrderRouter = require('./RefundOrder');
 const dashboardRouter = require('./Dashboard');
+const personalInfodRouter = require('./PersonalInfo');
 
 function route(app) {
   app.use('/home', homeRouter);
+  app.use('/info', personalInfodRouter);
   app.use('/file', fileRouter);
   app.use('/product', productRouter);
   app.use('/authentication', authenticationRouter);
