@@ -2,6 +2,7 @@ const homeRouter = require('./Home');
 const authenticationRouter = require('./Authentication');
 const manageProductsRouter = require('./ManageProducts');
 const manageVouchersRouter = require('./ManageVouchers');
+const manageCustomersRouter = require('./ManageCustomers');
 const voucherRouter = require('./Voucher');
 const favoriteRouter = require('./Favorite');
 const fileRouter = require('./File');
@@ -21,6 +22,7 @@ function route(app) {
   app.use('/authentication', authenticationRouter);
   app.use('/manage-products', manageProductsRouter);
   app.use('/manage-vouchers', manageVouchersRouter);
+  app.use('/manage-customers', manageCustomersRouter);
   app.use('/favorite', favoriteRouter);
   app.use('/voucher', voucherRouter);
   app.use('/search', searchRouter);
