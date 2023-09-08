@@ -16,7 +16,7 @@ class ManageCustomersController {
         await pool
           .request()
           .query(
-            `select TEN_TK, HO_TEN, convert(varchar, NGAY_SINH, 107) as NGAY_SINH, EMAIL, SDT,COIN from dbo.KHACHHANG;
+            `select TEN_TK, HO_TEN, convert(varchar, NGAY_SINH, 107) as NGAY_SINH, EMAIL, SDT,DIEM_THUONG,COIN ,STATUS_ACCOUNT from dbo.KHACHHANG;
               select MA_KHACH,NGAYTAO,TONGTIEN,PHI_GIAO_HANG,GIAM_GIA,GIAM_GIA_GIAO_HANG from dondathang`,
           )
           .then((v) => {
