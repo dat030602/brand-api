@@ -15,6 +15,8 @@ router.put('/updateCart', UserController.ChangeItemCartAmount);
 router.post('/confirmPaypal', UserController.ConfirmPaypal);
 router.post('/cancelPaypal', UserController.CancelPaypal);
 router.get('/returnVnPay', UserController.ReturnVnPay);
+router.get('/checkexpire', UserController.CheckExpired);
+router.post('/cancelOrder', UserController.CancelOrder);
 
 // router.post("/checkout",UserController.CheckOut)
 module.exports = router;
