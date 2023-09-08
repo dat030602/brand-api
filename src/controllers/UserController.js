@@ -757,8 +757,8 @@ const CreateOrderPayPal = async (access_token, dataFormPayment) => {
     intent: 'CAPTURE',
     purchase_units: [dataFormPayment],
     application_context: {
-      return_url: 'http://localhost:3000/order/confirmPaypal',
-      cancel_url: 'http://localhost:3000/order/cancelPaypal',
+      return_url: 'https://brand-ui-nine.vercel.app/order/confirmPaypal',
+      cancel_url: 'https://brand-ui-nine.vercel.app/order/cancelPaypal',
     },
   });
 
