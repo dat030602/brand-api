@@ -6,6 +6,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 const RefundOrderController = require('../controllers/RefundOrderController');
 
-router.post('/', upload.fields([{ name: 'imageUpload', maxCount: 10 }]), RefundOrderController.AddNewRefundRequest);
-// router.post('/detail', upload.fields([{ name: 'imageUpload', maxCount: 1 }]), RefundOrderController.AddRefundDetail);
+router.post('/', upload.fields([{ name: 'imageUpload', maxCount: 1 }]), RefundOrderController.AddNewRefundRequest);
+router.put('/:slug/cancel', RefundOrderController.CancelRefund);
+router.get('/:slug/', RefundOrderController.GetOrderRefundRequest);
+router.get('/:slug/detail', RefundOrderController.GetRefundDetail);
+
 module.exports = router;
