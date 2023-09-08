@@ -506,9 +506,9 @@ class UserController {
               headers: { 'Content-Type': 'application/json' },
             });
             const dataResponse = response.data;
-            console.log(dataResponse);
             if (dataResponse.vnp_TransactionStatus === '00') {
-              const total = dataResponse.vnp_Amount / 23750;
+              let total = dataResponse.vnp_Amount / 23750;
+              total = total / 100;
               let pool2 = await sql.connect(config);
               let confirmVnPal = await pool2
                 .request()
