@@ -187,6 +187,8 @@ class UserController {
                 .input('GIAM_GIA_GIAO_HANG', sql.Float, info.ship_discount)
                 .input('LY_DO_HUY', sql.NVarChar(1000), null)
                 .input('NGAY_GIAO_HANG', sql.VarChar(1000), info.dateShip)
+                .input('LINK', sql.VarChar(1000), responeDataFromPayPal.linkCheckOut)
+
                 .execute('CREATE_ORDER');
 
               if (create_DH.returnValue === 1) {
@@ -294,6 +296,8 @@ class UserController {
               .input('GIAM_GIA_GIAO_HANG', sql.Float, info.ship_discount)
               .input('LY_DO_HUY', sql.NVarChar(1000), null)
               .input('NGAY_GIAO_HANG', sql.VarChar(1000), info.dateShip)
+              .input('LINK', sql.VarChar(1000), vnpUrl)
+
               .execute('CREATE_ORDER');
             console.log(create_DH);
 
@@ -303,7 +307,6 @@ class UserController {
                 .input('MA_DONHANG', sql.VarChar(10), info.MA_DH)
                 .input('VnPay', sql.VarChar(1000), orderId)
                 .input('DATECREATE', sql.VarChar(1000), `${dateCreateVnPay}`)
-
                 .query('INSERT INTO VNPAY_PAYMENT VALUES(@MA_DONHANG,@VnPay,NULL,@DATECREATE,NULL,NULL,NULL)');
 
               const wait = listOrderItem.map(async (product) => {
