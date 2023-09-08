@@ -175,8 +175,7 @@ class ManageOrdersController {
             .query(
               `select d.MA_KHACH, d.MA_DONHANG, d.TRANGTHAI, CONVERT(varchar, d.NGAYTAO, 107) as NGAYTAO, 
             d.LOAI_THANHTOAN, d.PHI_GIAO_HANG, d.TONGTIEN, d.GIAM_GIA,d.GIAM_GIA_GIAO_HANG, d.LY_DO_HUY, dc.SONHA_DUONG, p.TEN_PHUONG, tp.TEN_THANHPHO, 
-            t.TEN_TINH,
-            d.NGAY_GIAO_HANG
+            t.TEN_TINH,d.NGAY_GIAO_HANG,d.LINK
             from DONDATHANG d join DIACHIGIAOHANG dc on d.MA_KHACH = dc.MA_KHACH and d.STT_DIACHI = dc.STT
             join PHUONG p on dc.PHUONG = p.MA_PHUONG
             join THANHPHO tp on dc.THANHPHO = tp.MA_THANHPHO
