@@ -15,7 +15,7 @@ class ManageCustomersController {
             let result;
             await pool
                 .request()
-                .query(`select TEN_TK, HO_TEN, convert(varchar, NGAY_SINH, 107) as NGAY_SINH, EMAIL, SDT from dbo.KHACHHANG `)
+                .query(`select TEN_TK, HO_TEN, convert(varchar, NGAY_SINH, 107) as NGAY_SINH, EMAIL, SDT, STATUS_ACCOUNT, DIEM_THUONG from dbo.KHACHHANG `)
                 .then((v) => {
                     result = v;
                 })
@@ -41,6 +41,7 @@ EditCustomer(req, res) {
       request.input('Email', sql.VarChar(30), req.body.data.email)
       request.input('Sdt', sql.Char(10), req.body.data.sdt)
       request.input('NgaySinh', sql.VarChar(15), req.body.data.date)
+      request.input('Status', sql.Int, req.body.data.status)
       // query to the database and get the records
       request.execute('dbo.SP_EDIT_CUSTOMER', function (err, response) {
         if (err) console.log(err);
