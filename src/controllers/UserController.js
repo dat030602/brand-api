@@ -96,6 +96,7 @@ class UserController {
       let pool = await sql.connect(config);
       let result = await pool.request().input('USERNAME', sql.VarChar(10), id_user).execute('ADDRESS_USER');
       let result3 = await pool.request().input('MA_KHACH', sql.VarChar(10), id_user).execute('GET_VOUCHER');
+      let get_coin = await pool.request().input('MA_KHACH', sql.VarChar(10), id_user).execute('GET_COIN');
       const address = [];
       const dataTemp = result.recordset;
       const wait = dataTemp.map((addressTemp) => {
@@ -113,7 +114,7 @@ class UserController {
       Promise.all(wait).then(() => {
         res.send({
           message: 'success',
-          data: { address, voucher: result3.recordset },
+          data: { address, voucher: result3.recordset, coin: get_coin.recordset[0].COIN },
         });
       });
     } catch (error) {
@@ -161,8 +162,13 @@ class UserController {
         else {
           if (dataUser.payment_method === 'paypal') {
             const access_token = await getToken();
-            const info = await GetAllInfo(listOrderItem, dataUser.id_user, dataUser.index_address, discount);
-
+            const info = await GetAllInfo(
+              listOrderItem,
+              dataUser.id_user,
+              dataUser.index_address,
+              discount,
+              dataUser.is_Use_Coin,
+            );
             const dataFormPayment = await CreatePaymentForm(listOrderItem, info);
             const responeDataFromPayPal = await CreateOrderPayPal(access_token, dataFormPayment);
             if (responeDataFromPayPal.status === 'fail') res.sendstatus(404);
@@ -211,8 +217,15 @@ class UserController {
               }
             }
           }
+
           if (dataUser.payment_method === 'vnpay') {
-            const info = await GetAllInfo(listOrderItem, dataUser.id_user, dataUser.index_address, discount);
+            const info = await GetAllInfo(
+              listOrderItem,
+              dataUser.id_user,
+              dataUser.index_address,
+              discount,
+              dataUser.is_Use_Coin,
+            );
             const total = Number((info.total + info.ship_fee - info.discount - info.ship_discount).toFixed(2));
             const date = new Date();
             let dateCreateVnPay = moment(date).format('YYYYMMDDHHmmss');
@@ -323,6 +336,7 @@ class UserController {
 
   async ConfirmPaypal(req, res) {
     try {
+      process.env.TZ = 'Asia/Ho_Chi_Minh';
       const bodyData = req.body.data;
       const id_Paypal = bodyData.id_Paypal;
       const id_user = bodyData.id_user;
@@ -336,7 +350,6 @@ class UserController {
         .execute('CHECK_PAYPAL_PAYMENT');
       if (check_user.recordset.length != 0) {
         const access_token = await getToken();
-        console.log(access_token);
         const checkData = await CheckOrderPaypal(access_token, id_Paypal);
         console.log('check', checkData);
         if (checkData.status === 'APPROVED') {
@@ -371,6 +384,12 @@ class UserController {
         if (checkData.status === 'fail') {
           res.send({ status: 'error', message: 'Order has been cancel' });
         }
+        if (checkData.status === '404') {
+          let pool3 = await sql.connect(config);
+
+          await pool3.request().input('ID_PAYPAL', sql.VarChar(1000), id_Paypal).execute('CANCELPAYPAL');
+          res.send({ status: 'error', message: 'Order has been cancel' });
+        }
       } else {
         res.send({ status: 'Not Found', message: 'Not found data' });
       }
@@ -381,6 +400,7 @@ class UserController {
   }
 
   async CancelPaypal(req, res) {
+    process.env.TZ = 'Asia/Ho_Chi_Minh';
     const bodyData = req.body.data;
     const id_Paypal = bodyData.id_Paypal;
     const id_user = bodyData.id_user;
@@ -401,6 +421,7 @@ class UserController {
 
   async ReturnVnPay(req, res) {
     try {
+      process.env.TZ = 'Asia/Ho_Chi_Minh';
       const query = req.query;
       console.log(query);
       if (query.vnp_ResponseCode === '00') {
@@ -495,7 +516,7 @@ class UserController {
                 .input('ID_VNPAY', sql.VarChar(1000), query.vnp_TxnRef)
                 .input('UPDATE_TIME', sql.DateTime, date)
                 .input('DIEMTHUONG', sql.Float, total / 10)
-                .input('COIN', sql.Float, total / 10)
+                .input('COIN', sql.Float, total / 100)
                 .input('BANKCODE', sql.VarChar(100), dataResponse.vnp_BankCode)
                 .input('BANKTRANCODE', sql.VarChar(100), dataResponse.vnp_CardNumber)
                 .input('CARDTYPE', sql.VarChar(100), query.vnp_CardType)
@@ -540,6 +561,7 @@ class UserController {
 
   async GetShipData(req, res) {
     try {
+      process.env.TZ = 'Asia/Ho_Chi_Minh';
       const id_user = req.query.id_user;
       const stt = req.query.index;
       let pool = await sql.connect(config);
@@ -577,10 +599,128 @@ class UserController {
   }
 
   async GetVoucher(req, res) {
-    const id_user = req.body.id_user;
-    let pool = await sql.connect(config);
-    let result = await pool.request().input('MA_KHACH', sql.VarChar(10), id_user).execute('GET_VOUCHER');
-    res.send(result.recordset);
+    try {
+      const id_user = req.body.id_user;
+      let pool = await sql.connect(config);
+      let result = await pool.request().input('MA_KHACH', sql.VarChar(10), id_user).execute('GET_VOUCHER');
+      res.send(result.recordset);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(404);
+    }
+  }
+  async CheckExpired(req, res) {
+    try {
+      process.env.TZ = 'Asia/Ho_Chi_Minh';
+      const id_user = req.query.id_user;
+      let pool = await sql.connect(config);
+      let all_order_pending = await pool
+        .request()
+        .input('MA_KHACH', sql.VarChar(10), id_user)
+        .query(
+          "SELECT MA_DONHANG,NGAYTAO,LOAI_THANHTOAN FROM DONDATHANG WHERE MA_KHACH = @MA_KHACH AND TRANGTHAI = 'Pending'",
+        );
+      const listOrder = all_order_pending.recordset;
+      listOrder.map(async (order) => {
+        if (order.LOAI_THANHTOAN === 'paypal') {
+          const time = new Date(order.NGAYTAO).getTime();
+          const timeExpire = new Date(time + 6 * 60 * 60 * 1000);
+          const now = new Date();
+          if (now >= timeExpire) {
+            await pool
+              .request()
+              .input('MA_DONHANG', sql.VarChar(10), order.MA_DONHANG)
+              .query(
+                "UPDATE DONDATHANG SET TRANGTHAI = 'Cancel', LY_DO_HUY = 'payment expires' WHERE MA_DONHANG = @MA_DONHANG",
+              );
+          }
+        } else {
+          const time = new Date(order.NGAYTAO).getTime();
+          const timeExpire = new Date(time + 15 * 60 * 1000);
+          const now = new Date();
+          if (now >= timeExpire) {
+            await pool
+              .request()
+              .input('MA_DONHANG', sql.VarChar(10), order.MA_DONHANG)
+              .query(
+                "UPDATE DONDATHANG SET TRANGTHAI = 'Cancel', LY_DO_HUY = 'payment expires' WHERE MA_DONHANG = @MA_DONHANG",
+              );
+          }
+        }
+      });
+      res.send(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(404);
+    }
+  }
+
+  async CheckExpiredPaypal(req, res) {
+    try {
+      process.env.TZ = 'Asia/Ho_Chi_Minh';
+      const id_user = req.query.id_user;
+      const id_paypal = req.query.id_paypal;
+
+      let pool = await sql.connect(config);
+      let all_order_pending = await pool
+        .request()
+        .input('MA_KHACH', sql.VarChar(10), id_user)
+        .query(
+          'SELECT MA_DONHANG,NGAYTAO,LOAI_THANHTOAN FROM DONDATHANG DDH JOIN PAYPAL_PAYMENT PYP ON DDH.MA_DONHANG = PYP.MA_DONHANG WHERE DDH.MA_KHACH = @MA_KHACH',
+        );
+      const listOrder = all_order_pending.recordset;
+      listOrder.map(async (order) => {
+        if (order.LOAI_THANHTOAN === 'paypal') {
+          const time = new Date(order.NGAYTAO).getTime();
+          const timeExpire = new Date(time + 6 * 60 * 60 * 1000);
+          const now = new Date();
+          if (now >= timeExpire) {
+            await pool
+              .request()
+              .input('MA_DONHANG', sql.VarChar(10), order.MA_DONHANG)
+              .query(
+                "UPDATE DONDATHANG SET TRANGTHAI = 'Cancel', LY_DO_HUY = 'payment expires' WHERE MA_DONHANG = @MA_DONHANG",
+              );
+          }
+        } else {
+          const time = new Date(order.NGAYTAO).getTime();
+          const timeExpire = new Date(time + 15 * 60 * 1000);
+          const now = new Date();
+          if (now >= timeExpire) {
+            await pool
+              .request()
+              .input('MA_DONHANG', sql.VarChar(10), order.MA_DONHANG)
+              .query(
+                "UPDATE DONDATHANG SET TRANGTHAI = 'Cancel', LY_DO_HUY = 'payment expires' WHERE MA_DONHANG = @MA_DONHANG",
+              );
+          }
+        }
+      });
+      res.send(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(404);
+    }
+  }
+  async CancelOrder(req, res) {
+    try {
+      const id_user = req.body.id_user;
+      const id_order = req.body.id_order;
+      let pool = await sql.connect(config);
+      const cancel_order = await pool
+        .request()
+        .input('MA_DONHANG', sql.VarChar(10), id_order)
+        .input('MA_KHACH', sql.VarChar(10), id_user)
+        .execute('CANCEL_ORDER');
+      if (cancel_order.returnValue === 0) {
+        res.send({ status: 'fail', message: 'Order not found' });
+      } else {
+        res.send({ status: 'success', message: 'Cancel order success' });
+      }
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(404);
+    }
   }
 }
 
@@ -645,21 +785,25 @@ const CheckOrderPaypal = async (access_token, id_paypal) => {
   const headers = {
     Authorization: `Bearer ${access_token}`,
   };
-  const response = await axios.get(baseUrl, {
-    headers: headers,
-  });
-  if (response.status === 200) {
-    const returnData = {
-      status: response.data.status,
-      email:
-        response.data.status === 'CREATED'
-          ? ''
-          : response.data.payment_source.paypal.email_address != undefined
-          ? response.data.payment_source.paypal.email_address
-          : '',
-    };
-    return returnData;
-  } else return { status: 'fail' };
+  try {
+    const response = await axios.get(baseUrl, {
+      headers: headers,
+    });
+    if (response.status === 200) {
+      const returnData = {
+        status: response.data.status,
+        email:
+          response.data.status === 'CREATED'
+            ? ''
+            : response.data.payment_source.paypal.email_address != undefined
+            ? response.data.payment_source.paypal.email_address
+            : '',
+      };
+      return returnData;
+    } else return { status: 'fail' };
+  } catch (error) {
+    return { status: '404' };
+  }
 };
 
 const ConfirmPaypal = async (access_token, id_paypal) => {
@@ -681,7 +825,7 @@ const ConfirmPaypal = async (access_token, id_paypal) => {
   } else return { status: 'fail' };
 };
 
-const GetAllInfo = async (listOrderItem, id_user, index_address, discount) => {
+const GetAllInfo = async (listOrderItem, id_user, index_address, discount, is_Use_Coin) => {
   // total
   // ship_fee
   // tax
@@ -695,6 +839,7 @@ const GetAllInfo = async (listOrderItem, id_user, index_address, discount) => {
     .execute('ADDRESS_USER_INDEX');
   const address_user = get_address.recordset[0];
   const full_info = `${address_user.SONHA_DUONG}, ${address_user.TEN_PHUONG}, ${address_user.TEN_THANHPHO}, ${address_user.TEN_TINH}`;
+
   let total = 0;
   const wait = listOrderItem.map(async (product) => {
     let get_price = await pool
@@ -704,6 +849,13 @@ const GetAllInfo = async (listOrderItem, id_user, index_address, discount) => {
       .query('SELECT GIA_BAN from CT_SANPHAM WHERE MA_SP = @MA_SP AND STT = @STT');
     total += get_price.recordset[0].GIA_BAN * product.SL;
   });
+  let coin = 0;
+  if (is_Use_Coin === true) {
+    let get_coin = await pool.request().input('MA_KHACH', sql.VarChar(10), id_user).execute('GET_COIN');
+    coin = get_coin.recordset[0].COIN;
+    coin = Number(coin.toFixed(2));
+  }
+
   let get_info_Address = await pool
     .request()
     .input('MA_KHACH', sql.VarChar(10), id_user)
@@ -726,7 +878,7 @@ const GetAllInfo = async (listOrderItem, id_user, index_address, discount) => {
     MA_DH,
     total: total,
     ship_fee: fee,
-    discount: 0,
+    discount: is_Use_Coin === false ? 0 : coin >= total / 3 ? Number((total / 3).toFixed(2)) : coin,
     ship_discount: fee * (discount / 100),
     dateShip: dateShip,
     full_info,
@@ -876,6 +1028,10 @@ const CreatePaymentForm = async (listOrderItem, info) => {
       shipping_discount: {
         currency_code: 'USD',
         value: `${info.ship_discount.toFixed(2)}`,
+      },
+      discount: {
+        currency_code: 'USD',
+        value: `${info.discount}`,
       },
     },
   };
