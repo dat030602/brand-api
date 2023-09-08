@@ -9,6 +9,7 @@ class AuthenticationController {
     const func = async () => {
       try {
         let result;
+        console.log(req.body.data)
         await sql.connect(config).then((conn) =>
           conn
             .request()
